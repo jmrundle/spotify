@@ -18,7 +18,6 @@ for i, track in enumerate(top_tracks['items']):
     weighted_tracks.append(info)
 
 
-
 # Recommendation seed info
 #
 #   Seed Tracks: top 2 tracks

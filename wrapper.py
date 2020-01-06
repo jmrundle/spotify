@@ -35,7 +35,9 @@ class SpotifyWrapper:
         if token is None:
             url = self.auth.get_authorize_url()
             webbrowser.open(url)
-            url = input("URL: ")
+            print("After you authenticate and give permission for this app to access various scopes,")
+            print("  you will be redirected to a URL.")
+            url = input("Enter that URL here: ")
 
             code = self.auth.parse_response_code(url)
             token = self.auth.get_access_token(code)
@@ -52,39 +54,23 @@ class SpotifyWrapper:
         
     def _get(self, endpoint, **params):
         headers = self.get_headers()
-        resp = requests.get(BASE + endpoint, headers=headers, params=params)
-        
+
         if self.trace:
             print("GET ", BASE + endpoint)
             print("Headers: ", json.dumps(headers, indent=4))
             print("Params: ", json.dumps(params, indent=4))
-            print("Response: ", json.dumps(resp.json(), indent=4))
-       
+        
+        resp = requests.get(BASE + endpoint, headers=headers, params=params)
         return resp.json()
     
     def _post(self, endpoint, **payload):
         headers = self.get_headers()
         resp = requests.post(BASE + endpoint, headers=headers, payload=payload)
-
-        if self.trace:
-            print("POST ", BASE + endpoint)
-            print("Headers: ", json.dumps(headers, indent=4))
-            print("Payload: ", json.dumps(payload, indent=4))
-            print("Response: ", json.dumps(resp.json(), indent=4))
-        
         return resp.json()
 
     def _put(self, endpoint, payload, **params):
         headers = self.get_headers()
         resp = requests.put(BASE + endpoint, headers=headers, payload=payload, params=params)
-
-        if self.trace:
-            print("PUT ", BASE + endpoint)
-            print("Headers: ", json.dumps(headers, indent=4))
-            print("Payload: ", json.dumps(payload, indent=4))
-            print("Params: ", json.dumps(params, indent=4))
-            print("Response: ", json.dumps(resp.json(), indent=4))
-            
         return resp.json()
     
     def get_user_id(self):
@@ -111,14 +97,12 @@ class SpotifyWrapper:
     def get_new_releases(self, limit=10, country='US'):
         return self._get("/v1/browse/new-releases", country=country, limit=limit)
         
-    def get_recommendations(self, seed_artists=None, seed_genres=None, seed_tracks=None, **kwargs):
-        seed_artists = ",".join(seed_artists) if seed_artists else None
-        seed_tracks = ",".join(seed_tracks) if seed_tracks else None
-        seed_genres = ",".join(seed_genres) if seed_genres else None
+    def get_recommendations(self, seed, **kwargs):
+        artists = ",".join(seed.get('artists', []))
+        genres = ",".join(seed.get('genres', []))
+        tracks = ",".join(seed.get('tracks', []))
 
-        return self_get("/v1/recommendations",
-                        seed_artists=seed_artists, seed_genres=seed_genres, seed_tracks=seed_tracks,
-                        **kwargs)
+        return self_get("/v1/recommendations", seed_artists=artists, seed_genres=genres, seed_tracks=tracks, **kwargs)
     
         
         
