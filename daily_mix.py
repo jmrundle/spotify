@@ -3,29 +3,32 @@ Custom Daily-Mix implementation
 """
 from wrapper import SpotifyWrapper
 from util import random_weighted_select, random_select
-from os import environ, path
+import os
 import json
 
 
-PL_FILE = "json/playlist.json"
+PL_FILE = "cache/playlist.json"
 PL_NAME = "Custom Daily Mix"
 PL_DESCR = "Programmatically generated daily mix"
 
 
 def init_pl_file(name, description, pl_id):
+    """Create a json file to store playlist info"""
     data = {
         "name": name,
         "description": description,
         "id": pl_id
     }
-    
+    # create dirs if necessary
+    os.makedirs(os.path.filename(PL_FILE), exist_ok=True)
     with open(PL_FILE, 'w+') as json_file:
         json.dump(data, json_file)
 
 
 def load_pl_file():
+    """Pull data from playlist json file"""
     data = {}
-    if path.exists(PL_FILE):
+    if os.path.exists(PL_FILE):
         with open(PL_FILE, 'r') as json_file:
             data = json.load(json_file)
     return data
@@ -111,7 +114,7 @@ def get_new_tracks(sp, new_albums, top_artists, limit=5):
     for artist_id in artist_matches:
         tracks += artist_tracks[artist_id]
     
-    return random_weighted_select(tracks, limit=10)
+    return random_weighted_select(tracks, limit=limit)
 
 
 def update_playlist(sp, uris):
@@ -125,24 +128,25 @@ def update_playlist(sp, uris):
         
     resp = sp.update_playlist(playlist_id, uris)
 
-    print("Loaded playlist {playlist_id} with the following tracks:")
+    print(f"\nLoaded playlist {playlist_id} with the following tracks:")
     print("   "+"\n   ".join(f"{i+1}: {turi}" for i, turi in enumerate(uris)))
 
+
 if __name__ == '__main__':
-    # Composition of Playlist
-    #   20 random songs from short-term favorites
-    #   15 song recommendations
-    #   10 songs from recently released
-    #   1  song from 5 short-term favorite artists
+    """
+    Composition of Playlist
+        20 random songs from short-term favorites
+        25 song recommendations
+        5 songs from recently released
 
-    # Recommendation seed info
-    #
-    #   Seed Tracks: top 2 tracks
-    #   Seed Genre: top 3 genres
-    #   Target Popularity:  avg popularity of artists
-    #
-    #   Use this to generate 50 songs
+    Recommendation info
+        Seed Tracks: top 2 tracks
+        Seed Genre: top 3 genres
+        Target Popularity:  avg popularity of artists
 
+        Use this to generate 50 songs, which we randomly select 25 (weighted without replacement)
+    """
+    
     sp = SpotifyWrapper("user-top-read playlist-modify-public")
 
     # get top tracks and artists

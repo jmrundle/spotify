@@ -22,7 +22,7 @@ class SpotifyWrapper:
         if redirect_uri is None:
             redirect_uri = environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8000/callback")
 
-        cache_path = "json/spotify-token.json"
+        cache_path = "cache/spotify-token.json"
         
         self.auth = SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope, cache_path=cache_path)
 
@@ -35,8 +35,8 @@ class SpotifyWrapper:
             url = self.auth.get_authorize_url()
             webbrowser.open(url)
             print("After you authenticate and give permission for this app to access various scopes,")
-            print("  you will be redirected to a URL.")
-            url = input("Enter that URL here: ")
+            print("you will be redirected to a URL.")
+            url = input("\nEnter that URL here: ")
 
             code = self.auth.parse_response_code(url)
             token = self.auth.get_access_token(code)
