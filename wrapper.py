@@ -22,7 +22,7 @@ class SpotifyWrapper:
         if redirect_uri is None:
             redirect_uri = environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8000/callback")
 
-        cache_path = "spotify-token.json"
+        cache_path = "json/spotify-token.json"
         
         self.auth = SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope, cache_path=cache_path)
 
@@ -129,8 +129,7 @@ class SpotifyWrapper:
         return self._post(f"/v1/users/{user_id}/playlists", data=json.dumps(data))
 
     def add_tracks(self, playlist_id, track_uris):
-        uris = ",".join(track_uris)
-        data = {"uris": uris}
+        data = {"uris": track_uris}
         return self._post(f"/v1/playlists/{playlist_id}/tracks/", data=json.dumps(data))
 
     def update_playlist(self, playlist_id, track_uris):

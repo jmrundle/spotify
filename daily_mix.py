@@ -3,16 +3,36 @@ Custom Daily-Mix implementation
 """
 from wrapper import SpotifyWrapper
 from util import random_weighted_select, random_select
-from os import environ
+from os import environ, path
 import json
 
 
-PLAYLIST_NAME = "Custom Daily Mix"
-PLAYLIST_DESCRIPTION = "Programmatically generated daily mix"
+PL_FILE = "json/playlist.json"
+PL_NAME = "Custom Daily Mix"
+PL_DESCR = "Programmatically generated daily mix"
 
 
-def aggregate_top_genres(artists, limit=3):
-    """Aggregate a list of the top genres based on artist preferences"""
+def init_pl_file(name, description, pl_id):
+    data = {
+        "name": name,
+        "description": description,
+        "id": pl_id
+    }
+    
+    with open(PL_FILE, 'w+') as json_file:
+        json.dump(data, json_file)
+
+
+def load_pl_file():
+    data = {}
+    if path.exists(PL_FILE):
+        with open(PL_FILE, 'r') as json_file:
+            data = json.load(json_file)
+    return data
+
+        
+def get_top_genres(artists, limit=3):
+    """Get a list of the top genres based on artist preferences"""
     genre_map = dict()
 
     # get count of each genre
@@ -43,7 +63,7 @@ def get_recommendations(sp, top_tracks, top_artists, limit=15):
 
     # seed recommendations
     seed_tracks = random_weighted_select(top_track_ids, 2)
-    seed_genres = aggregate_top_genres(top_artists, 3)
+    seed_genres = get_top_genres(top_artists, 3)
     target_popularity = median_popularity(top_artists)
 
     # songs to add to playlist
@@ -57,13 +77,14 @@ def get_recommendations(sp, top_tracks, top_artists, limit=15):
     return random_weighted_select(rec_ids, limit=limit)
 
 
-def get_new_tracks(sp, new_albums, top_artists, limit=10):
+def get_new_tracks(sp, new_albums, top_artists, limit=5):
     """Gets a list of new tracks somewhat tailored to the user"""
-    top_genres = aggregate_top_genres(top_artists, 10)
-    album_ids  = [album["id"] for album in new_albums]
+    top_genres = get_top_genres(top_artists, 20)
 
+    album_ids  = [album["id"] for album in new_albums]
     albums = sp.get_albums(album_ids)["albums"]
 
+    # get list of tracks for each artist
     artist_tracks = dict()
     for album in albums:
         for track in album["tracks"]["items"]:
@@ -73,6 +94,7 @@ def get_new_tracks(sp, new_albums, top_artists, limit=10):
                 else:
                     artist_tracks[artist["id"]] = [track["uri"]]
 
+    # of those artists, keep those who's genre fits in our top 20
     artists = sp.get_artists(list(artist_tracks.keys()))
     popularity = dict()
     artist_matches = list()
@@ -82,29 +104,29 @@ def get_new_tracks(sp, new_albums, top_artists, limit=10):
         if any(genre in top_genres for genre in artist["genres"]):
             artist_matches.append(artist["id"])
 
+    # sort based on popularity
     artist_matches = sorted(artist_matches, reverse=True, key=lambda a: popularity[a])
-
+    
     tracks = list()
     for artist_id in artist_matches:
         tracks += artist_tracks[artist_id]
-
-    return random_select(tracks, limit=10)
+    
+    return random_weighted_select(tracks, limit=10)
 
 
 def update_playlist(sp, uris):
-    if not environ.get("PLAYLIST_ID"):
-        playlist_id = sp.create_playlist(PLAYLIST_NAME, description=PLAYLIST_DESCRIPTION)["id"]
-        environ["PLAYLIST_ID"] = playlist_id
-        print(f"Created playlist {playlist_id}")
+    playlist = load_pl_file()
 
-        sp.add_tracks(playlist_id, uris)
-
+    if not playlist.get("id"):
+        playlist_id = sp.create_playlist(PL_NAME, description=PL_DESCR)["id"]
+        init_pl_file(PL_NAME, PL_DESCR, playlist_id)
     else:
-        playlist_id = environ["PLAYLIST_ID"]
-        sp.update_playlist(playlist_id, uris)
+        playlist_id = playlist.get("id")
+        
+    resp = sp.update_playlist(playlist_id, uris)
 
-    print("Loaded playlist with the following tracks:")
-    print("\n".join(f"{i}: {turi}" for i, turi in enumerate(uris)))
+    print("Loaded playlist {playlist_id} with the following tracks:")
+    print("   "+"\n   ".join(f"{i+1}: {turi}" for i, turi in enumerate(uris)))
 
 if __name__ == '__main__':
     # Composition of Playlist
@@ -132,8 +154,8 @@ if __name__ == '__main__':
 
     # songs to add to playlist
     favorite_tracks = random_weighted_select(top_track_uris, 20)
-    recommendations = get_recommendations(sp, top_tracks, top_artists, 15)
-    new_tracks = get_new_tracks(sp, new_albums, top_artists, 10)
+    recommendations = get_recommendations(sp, top_tracks, top_artists, 25)
+    new_tracks = get_new_tracks(sp, new_albums, top_artists, 5)
 
     songs = favorite_tracks + recommendations + new_tracks
 
