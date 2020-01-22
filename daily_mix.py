@@ -45,7 +45,6 @@ def get_top_genres(artists, limit=3):
     # sort genres by frequency
     genres = sorted(genre_map.keys(), key=lambda key: genre_map[key], reverse=True)
 
-    # take top 3
     return genres[:limit]
 
 
@@ -141,8 +140,7 @@ if __name__ == '__main__':
     Recommendation info
         Seed Tracks: top 2 tracks
         Seed Genre: top 3 genres
-        Target Popularity:  avg popularity of artists
-
+        Target Popularity:  median popularity of artists
         Use this to generate 50 songs, which we randomly select 25 (weighted without replacement)
     """
     
