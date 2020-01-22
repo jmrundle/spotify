@@ -12,14 +12,14 @@ def random_weighted_select(items, limit):
     weights = np.square(weights)
     weights = np.divide(weights, np.sum(weights))
 
-    indeces = np.random.choice(size, limit, p=weights, replace=False)
-    return [items[i] for i in indeces]
+    indexes = np.random.choice(size, limit, p=weights, replace=False)
+    return [items[i] for i in indexes]
 
 
 def random_select(items, limit):
     size = len(items)
-    indeces = np.random.choice(size, limit, replace=False)
-    return [items[i] for i in indeces]
+    indexes = np.random.choice(size, limit, replace=False)
+    return [items[i] for i in indexes]
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import os
 import json
 
 
-PL_FILE = "cache/playlist.json"
+PL_FILE = ".daily-mix-playlist"
 PL_NAME = "Custom Daily Mix"
 PL_DESCR = "Programmatically generated daily mix"
 
@@ -20,7 +20,6 @@ def init_pl_file(name, description, pl_id):
         "id": pl_id
     }
     # create dirs if necessary
-    os.makedirs(os.path.filename(PL_FILE), exist_ok=True)
     with open(PL_FILE, 'w+') as json_file:
         json.dump(data, json_file)
 

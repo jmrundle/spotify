@@ -22,7 +22,7 @@ class SpotifyWrapper:
         if redirect_uri is None:
             redirect_uri = environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8000/callback")
 
-        cache_path = "cache/spotify-token.json"
+        cache_path = ".spotify-token"
         
         self.auth = SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope, cache_path=cache_path)
 
@@ -128,14 +128,20 @@ class SpotifyWrapper:
         }
         return self._post(f"/v1/users/{user_id}/playlists", data=json.dumps(data))
 
+    def get_tracks(self, playlist_id, fields="", limit=100, offset=0):
+        return self._get(f"/v1/playlists/{playlist_id}/tracks", fields=fields, limit=limit, offset=offset)
+
     def add_tracks(self, playlist_id, track_uris):
         data = {"uris": track_uris}
         return self._post(f"/v1/playlists/{playlist_id}/tracks/", data=json.dumps(data))
 
     def update_playlist(self, playlist_id, track_uris):
         # playlist-modify-public
-        uris = ",".join(track_uris)
-        return self._put(f"/v1/playlists/{playlist_id}/tracks/", uris=uris)
+        uris = json.dumps({"uris": track_uris})
+        return self._put(f"/v1/playlists/{playlist_id}/tracks/", data=uris)
+
+    def get_playlists(self, fields="", limit=50):
+        return self._get("/v1/me/playlists", limit=limit, fields=fields)
 
 
 

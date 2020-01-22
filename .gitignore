@@ -1,4 +1,7 @@
 __pycache__/*
 
-json/*
+# cache tokens
+.daily-mix-playlist
+.queue-playlist-id
+.spotify-token
 
