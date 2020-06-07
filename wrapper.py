@@ -2,9 +2,10 @@
 Wrapper for a few useful methods from the Spotify API
 """
 
-from oauth2 import SpotifyOAuth
+from oauth import SpotifyOAuth
 import webbrowser
 from os import environ
+from os import path
 import json
 import requests
 
@@ -16,13 +17,13 @@ class SpotifyWrapper:
 
     def __init__(self, scope, client_id=None, client_secret=None, redirect_uri=None):       
         if client_id is None:
-            client_id = environ.get("SPOTIFY_CLIENT_ID", "3ef02e948f334570b661cbfe781b941a")
+            client_id = environ.get("SPOTIFY_CLIENT_ID")
         if client_secret is None:
-            client_secret = environ.get("SPOTIFY_CLIENT_SECRET", "bca8bff649c84dcb8c3dfde7ec0efc4c")
+            client_secret = environ.get("SPOTIFY_CLIENT_SECRET")
         if redirect_uri is None:
-            redirect_uri = environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8000/callback")
+            redirect_uri = environ.get("SPOTIFY_REDIRECT_URI")
 
-        cache_path = ".spotify-token"
+        cache_path = path.join(path.dirname(__file__), ".spotify-token")
         
         self.auth = SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope, cache_path=cache_path)
 
@@ -142,7 +143,4 @@ class SpotifyWrapper:
 
     def get_playlists(self, fields="", limit=50):
         return self._get("/v1/me/playlists", limit=limit, fields=fields)
-
-
-
 

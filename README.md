@@ -10,3 +10,4 @@
 
 ### TODO:
 - setup cronjob to run daily_mix.py daily
+- prompt for spotify username

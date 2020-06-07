@@ -1,14 +1,16 @@
+#!/usr/bin/env python3
+
 """
 Creates a queue from the songs in a select playlist, with a preference towards songs recently added
 """
 
 from wrapper import SpotifyWrapper
 from util import random_weighted_select
-from random import shuffle
 import sys
+import os.path
 
 
-PL_FILE = ".queue-playlist-id"
+PL_FILE = os.path.join(os.path.dirname(__file__), ".queue-playlist-id")
 
 
 def get_playlist_id():
@@ -58,7 +60,6 @@ def select_tracks(playlist_tracks, limit):
     # select with preference to newer tracks
     tracks = playlist_tracks[::-1]
     tracks = random_weighted_select(tracks, limit=limit)
-    shuffle(tracks)
     return tracks
 
 
@@ -81,6 +82,16 @@ def get_all_tracks(sp):
     return tracks
 
 
+"""
+def print_tracks(tracks):
+    for i, track in enumerate(tracks, 1):
+        print(track)
+        name = track["name"]
+        artists = ",".join(track["artists"])
+        print(f"{i}. {name} ({artists})")
+"""
+
+
 if __name__ == "__main__":
     """
     First, get all of the playlists for a user
@@ -88,7 +99,7 @@ if __name__ == "__main__":
     Then, have user select from them as the 'source' of the queue
     
     The program will then randomly select 100 songs with a preference towards
-    songs recently added, then shuffle those songs for good measure
+    songs recently added
     
     Finally, the 100 songs are used to replace the contents of chosen playlist
     
@@ -122,8 +133,10 @@ if __name__ == "__main__":
 
     # update playlist
     resp = sp.update_playlist(queue_pl_id, track_uris)
-
+    
+    """
     if 200 <= resp.status_code < 400:
         print("Successfully created playlist")
     else:
         print("Response raised " + resp.status_code + " error code.")
+    """

@@ -42,4 +42,4 @@ if __name__ == "__main__":
     string2 += "]"
 
     print("Non-Weighted: ", string)
-    print("Weighted: ", string2)
+    print("Weighted:     ", string2)

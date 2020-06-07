@@ -2,10 +2,8 @@
 https://github.com/plamere/spotipy/blob/master/spotipy/oauth2.py
 """
 
-from __future__ import print_function
 import base64
 import requests
-import os
 import json
 import time
 import sys

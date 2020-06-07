@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+
 """
 Custom Daily-Mix implementation
 """
+
 from wrapper import SpotifyWrapper
 from util import random_weighted_select, random_select
 import os
@@ -161,10 +164,4 @@ if __name__ == '__main__':
     songs = favorite_tracks + recommendations + new_tracks
 
     update_playlist(sp, songs)
-
-
-
-
-
-
 
